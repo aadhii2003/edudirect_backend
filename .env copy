@@ -1,0 +1,14 @@
+# Backend PostgreSQL Database Config
+DB_NAME=edudirect_db
+DB_USER=postgres
+DB_PASSWORD=pass
+DB_HOST=db
+DB_PORT=5432
+
+# Django Config
+DJANGO_SECRET_KEY=django-insecure-3x^189y78@!v=x8m&089u0*v2p7&_s!m&y08-w)56r)a2ucyp8!x1s&vndj7q60
+DJANGO_DEBUG=False
+DJANGO_ALLOWED_HOSTS=*
+
+# Frontend API URL (Used by Next.js in Docker to reach backend)
+NEXT_PUBLIC_API_URL=http://localhost:8001/api

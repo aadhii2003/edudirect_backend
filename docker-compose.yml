@@ -1,0 +1,69 @@
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME:-edudirect}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # Safer: only accessible from inside Docker network
+    # (remove the ports section completely if you prefer)
+    ports:
+      - "127.0.0.1:5432:5432"
+    networks:
+      - edudirect_net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-edudirect}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./edudirect_backend
+    restart: always
+    ports:
+      - "8001:8000"
+    environment:
+      - DB_NAME=${DB_NAME:-edudirect}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - SECRET_KEY=${DJANGO_SECRET_KEY:-change-me-to-a-long-random-string}
+      - DEBUG=${DJANGO_DEBUG:-False}
+      - ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS:-*}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - backend_media:/app/media
+    networks:
+      - edudirect_net
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput &&
+             gunicorn --bind 0.0.0.0:8000 --workers 3 lms_backend.wsgi:application"
+
+  frontend:
+    build:
+      context: ./edudirect_frontend
+    restart: always
+    ports:
+      - "3002:3002"
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8001/api}
+    depends_on:
+      - backend
+    networks:
+      - edudirect_net
+
+volumes:
+  postgres_data:
+  backend_media:
+
+networks:
+  edudirect_net:
+    driver: bridge
