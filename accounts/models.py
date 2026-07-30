@@ -55,10 +55,32 @@ def create_fee_record_for_student(sender, instance, created, **kwargs):
     if instance.batch:
         try:
             from billing.models import FeeRecord
-            FeeRecord.objects.get_or_create(
+            from decimal import Decimal
+            batch_fee = Decimal(str(instance.batch.fee or 0))
+            
+            # Use get_or_create to only run this logic on initial creation
+            record, record_created = FeeRecord.objects.get_or_create(
                 student=instance.user,
                 batch=instance.batch,
-                defaults={'course': instance.course, 'total_fee': instance.batch.fee}
+                defaults={'course': instance.course, 'total_fee': batch_fee}
             )
+            
+            if record_created:
+                # If the user passed a custom outstandingFees when creating the student,
+                # we calculate how much was paid upfront.
+                outstanding = Decimal(str(instance.outstandingFees or 0))
+                
+                if outstanding < batch_fee:
+                    paid_upfront = batch_fee - outstanding
+                    record.amount_paid = paid_upfront
+                    record.save(update_fields=['amount_paid'])
+                    
+                    # Log the initial payment transaction
+                    from billing.models import PaymentTransaction
+                    PaymentTransaction.objects.create(
+                        fee_record=record,
+                        amount=paid_upfront,
+                        payment_method='Initial Registration'
+                    )
         except Exception as e:
             print(f"Error creating fee record: {e}")
