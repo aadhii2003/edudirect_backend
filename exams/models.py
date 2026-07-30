@@ -83,3 +83,31 @@ class MalpracticeLog(models.Model):
 
     def __str__(self):
         return f"{self.violation_type} - {self.student.username} ({self.timestamp})"
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.db.models import Avg
+
+@receiver(post_save, sender=ExamSubmission)
+def update_student_gpa(sender, instance, **kwargs):
+    if instance.status == 'Evaluated':
+        # Calculate average percentage across all evaluated submissions for this student
+        submissions = ExamSubmission.objects.filter(student=instance.student, status='Evaluated')
+        
+        total_percentage = 0
+        count = 0
+        for sub in submissions:
+            if sub.exam.total_marks > 0:
+                total_percentage += (sub.total_score / sub.exam.total_marks) * 100
+                count += 1
+                
+        if count > 0:
+            avg_percent = total_percentage / count
+            # Convert to 4.0 scale (simplified logic: 100% = 4.0, 90=3.6 etc. (avg/25))
+            gpa = avg_percent / 25.0
+            gpa = round(min(4.0, max(0.0, gpa)), 2)
+            
+            if hasattr(instance.student, 'student_profile'):
+                instance.student.student_profile.gpa = gpa
+                instance.student.student_profile.save(update_fields=['gpa'])
+

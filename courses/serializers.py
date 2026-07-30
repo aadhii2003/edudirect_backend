@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Department, Course, Category, Subject, ClassSchedule, Batch
+from .models import Department, Course, Category, Subject, ClassSchedule, Batch, AttendanceRecord
 
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,6 +21,13 @@ class BatchSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Batch
+        fields = '__all__'
+
+class AttendanceRecordSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='student.get_full_name', read_only=True)
+    
+    class Meta:
+        model = AttendanceRecord
         fields = '__all__'
 
 class ClassScheduleSerializer(serializers.ModelSerializer):

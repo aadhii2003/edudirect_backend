@@ -10,6 +10,7 @@ urlpatterns = [
     path('api/', include('blog.urls')),
     path('api/exams/', include('exams.urls')),
     path('api/', include('assignments.urls')),
+    path('api/billing/', include('billing.urls')),
 ]
 
 # Force media serving even when DEBUG=False (Gunicorn)

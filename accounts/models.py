@@ -46,3 +46,19 @@ class FacultyProfile(models.Model):
 
     def __str__(self):
         return f"Faculty Profile: {self.user.username}"
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=StudentProfile)
+def create_fee_record_for_student(sender, instance, created, **kwargs):
+    if instance.batch:
+        try:
+            from billing.models import FeeRecord
+            FeeRecord.objects.get_or_create(
+                student=instance.user,
+                batch=instance.batch,
+                defaults={'course': instance.course, 'total_fee': instance.batch.fee}
+            )
+        except Exception as e:
+            print(f"Error creating fee record: {e}")

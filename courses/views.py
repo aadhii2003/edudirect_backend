@@ -1,8 +1,8 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Department, Course, Category, Subject, ClassSchedule, Batch
-from .serializers import DepartmentSerializer, CourseSerializer, CategorySerializer, SubjectSerializer, ClassScheduleSerializer, BatchSerializer
+from .models import Department, Course, Category, Subject, ClassSchedule, Batch, AttendanceRecord
+from .serializers import DepartmentSerializer, CourseSerializer, CategorySerializer, SubjectSerializer, ClassScheduleSerializer, BatchSerializer, AttendanceRecordSerializer
 
 class DepartmentViewSet(viewsets.ModelViewSet):
     queryset = Department.objects.all()
@@ -87,3 +87,16 @@ class ClassScheduleViewSet(viewsets.ModelViewSet):
                 Notification.objects.bulk_create(notifications)
                 
         return Response({'message': 'Class marked as completed successfully.'}, status=status.HTTP_200_OK)
+
+class AttendanceRecordViewSet(viewsets.ModelViewSet):
+    queryset = AttendanceRecord.objects.all()
+    serializer_class = AttendanceRecordSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = AttendanceRecord.objects.all()
+        schedule = self.request.query_params.get('schedule', None)
+        if schedule:
+            queryset = queryset.filter(schedule_id=schedule)
+        return queryset
+

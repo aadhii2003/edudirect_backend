@@ -105,3 +105,41 @@ class ClassSchedule(models.Model):
         if self.schedule_type == 'Specific Date' and self.scheduled_date:
             return f"{self.subject.title} - {self.scheduled_date} {self.start_time} (Batch: {self.batch.name if self.batch else 'None'})"
         return f"{self.subject.title} - {self.day_of_week} {self.start_time} (Batch: {self.batch.name if self.batch else 'None'})"
+
+class AttendanceRecord(models.Model):
+    STATUS_CHOICES = (
+        ('Present', 'Present'),
+        ('Absent', 'Absent'),
+        ('Late', 'Late'),
+    )
+    schedule = models.ForeignKey(ClassSchedule, on_delete=models.CASCADE, related_name='attendance_records')
+    student = models.ForeignKey('accounts.User', on_delete=models.CASCADE, related_name='attendance_records')
+    date = models.DateField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Present')
+    remarks = models.TextField(blank=True, null=True)
+
+    class Meta:
+        unique_together = ('schedule', 'student', 'date')
+
+    def __str__(self):
+        return f"{self.student.username} - {self.status} on {self.date}"
+
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+
+@receiver(post_save, sender=AttendanceRecord)
+@receiver(post_delete, sender=AttendanceRecord)
+def update_student_attendance(sender, instance, **kwargs):
+    # Calculate percentage: (Present + Late) / Total * 100
+    records = AttendanceRecord.objects.filter(student=instance.student)
+    total = records.count()
+    if total > 0:
+        attended = records.filter(status__in=['Present', 'Late']).count()
+        percentage = int((attended / total) * 100)
+    else:
+        percentage = 100
+        
+    if hasattr(instance.student, 'student_profile'):
+        instance.student.student_profile.attendance = percentage
+        instance.student.student_profile.save(update_fields=['attendance'])
+
