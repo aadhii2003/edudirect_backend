@@ -1,14 +1,7 @@
 # lms_backend/urls.py
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from django.urls import path, include, re_path
 from django.conf import settings
-from django.conf.urls.static import static
-# from academics.views import DepartmentViewSet, CourseViewSet
-
-# router = DefaultRouter()
-# router.register('departments', DepartmentViewSet)
-# router.register('courses', CourseViewSet)
-
+from django.views.static import serve
 
 urlpatterns = [
     path('api/auth/', include('accounts.urls')),
@@ -19,5 +12,9 @@ urlpatterns = [
     path('api/', include('assignments.urls')),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Force media serving even when DEBUG=False (Gunicorn)
+urlpatterns += [
+    re_path(r'^media/(?P<path>.*)$', serve, {
+        'document_root': settings.MEDIA_ROOT,
+    }),
+]
