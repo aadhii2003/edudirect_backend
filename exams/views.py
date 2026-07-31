@@ -16,11 +16,8 @@ class ScheduledExamViewSet(viewsets.ModelViewSet):
         exam = serializer.save(created_by=self.request.user)
         
         # Notify Teachers if created by admin
-        if self.request.user.role == 'admin':
-            if exam.batch:
-                teachers = User.objects.filter(role='teacher', faculty_profile__batches=exam.batch)
-            else:
-                teachers = User.objects.filter(role='teacher', faculty_profile__courses=exam.course)
+        if self.request.user.role == "admin":
+            teachers = User.objects.filter(role="teacher")
                 
             notifications = []
             for t in teachers:
