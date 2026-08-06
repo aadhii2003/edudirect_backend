@@ -29,7 +29,11 @@ class Migration(migrations.Migration):
             name='category',
         ),
         migrations.RunSQL(
-            sql='ALTER TABLE courses_department DROP COLUMN IF EXISTS slug;',
+            sql='''
+                ALTER TABLE courses_department DROP COLUMN IF EXISTS slug CASCADE;
+                DROP INDEX IF EXISTS courses_department_slug_197afd4f_like;
+                DROP INDEX IF EXISTS courses_department_slug_key;
+            ''',
             reverse_sql=migrations.RunSQL.noop
         ),
         # Step 1: Add field WITHOUT unique
