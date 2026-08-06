@@ -16,6 +16,23 @@ def populate_department_slugs(apps, schema_editor):
         dept.slug = slug
         dept.save(update_fields=['slug'])
 
+def drop_stale_slug_relations(apps, schema_editor):
+    with schema_editor.connection.cursor() as cursor:
+        # Drop the column if it exists, which cascades to most indexes
+        try:
+            cursor.execute('ALTER TABLE "courses_department" DROP COLUMN IF EXISTS "slug" CASCADE;')
+        except Exception:
+            pass
+        
+        # Forcefully drop the indexes if they somehow survived
+        try:
+            cursor.execute('DROP INDEX IF EXISTS "courses_department_slug_197afd4f_like";')
+        except Exception:
+            pass
+        try:
+            cursor.execute('DROP INDEX IF EXISTS "courses_department_slug_key";')
+        except Exception:
+            pass
 
 class Migration(migrations.Migration):
 
@@ -28,14 +45,7 @@ class Migration(migrations.Migration):
             model_name='course',
             name='category',
         ),
-        migrations.RunSQL(
-            sql='''
-                ALTER TABLE courses_department DROP COLUMN IF EXISTS slug CASCADE;
-                DROP INDEX IF EXISTS courses_department_slug_197afd4f_like;
-                DROP INDEX IF EXISTS courses_department_slug_key;
-            ''',
-            reverse_sql=migrations.RunSQL.noop
-        ),
+        migrations.RunPython(drop_stale_slug_relations, migrations.RunPython.noop),
         # Step 1: Add field WITHOUT unique
         migrations.AddField(
             model_name='department',
