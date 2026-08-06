@@ -7,7 +7,7 @@ class Department(models.Model):
     description = models.TextField(blank=True)
     head_of_department = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='headed_departments')
     facility_location = models.CharField(max_length=255, blank=True, null=True)
-    slug = models.SlugField(max_length=255, unique=True, blank=True, db_column='dept_slug')
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
