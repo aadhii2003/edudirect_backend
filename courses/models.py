@@ -7,14 +7,7 @@ class Department(models.Model):
     description = models.TextField(blank=True)
     head_of_department = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='headed_departments')
     facility_location = models.CharField(max_length=255, blank=True, null=True)
-
-    def __str__(self):
-        return self.name
-
-class Category(models.Model):
-    name = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
-    description = models.TextField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -23,6 +16,7 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Course(models.Model):
     COURSE_MODES = (
@@ -37,7 +31,6 @@ class Course(models.Model):
     shortDescription = models.TextField()
     longDescription = models.TextField()
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='courses')
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='courses')
     mode = models.CharField(max_length=20, choices=COURSE_MODES)
     instructor = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_courses')
     duration = models.CharField(max_length=100)

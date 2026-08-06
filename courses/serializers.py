@@ -1,15 +1,12 @@
 from rest_framework import serializers
-from .models import Department, Course, Category, Subject, ClassSchedule, Batch, AttendanceRecord
+from .models import Department, Course, Subject, ClassSchedule, Batch, AttendanceRecord
 
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
         fields = '__all__'
 
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = '__all__'
+
 
 class SubjectSerializer(serializers.ModelSerializer):
     class Meta:
@@ -50,14 +47,10 @@ class CourseSerializer(serializers.ModelSerializer):
             'id', 'slug', 'name', 'shortDescription', 'longDescription', 
             'department', 'departmentId', 'mode', 'duration', 'fee', 'startDates', 
             'certification', 'eligibility', 'syllabus', 'examPattern', 'examSchedule',
-            'image_url', 'category', 'subjects', 'batches', 'instructor', 'instructor_name'
+            'image_url', 'subjects', 'batches', 'instructor', 'instructor_name'
         ]
 
     def to_representation(self, instance):
-        """Include category details in GET requests."""
+        """Include department details in GET requests."""
         rep = super().to_representation(instance)
-        if instance.category:
-            rep['category_name'] = instance.category.name
-        else:
-            rep['category_name'] = None
         return rep

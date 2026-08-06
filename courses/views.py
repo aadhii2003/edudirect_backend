@@ -1,8 +1,8 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Department, Course, Category, Subject, ClassSchedule, Batch, AttendanceRecord
-from .serializers import DepartmentSerializer, CourseSerializer, CategorySerializer, SubjectSerializer, ClassScheduleSerializer, BatchSerializer, AttendanceRecordSerializer
+from .models import Department, Course, Subject, ClassSchedule, Batch, AttendanceRecord
+from .serializers import DepartmentSerializer, CourseSerializer, SubjectSerializer, ClassScheduleSerializer, BatchSerializer, AttendanceRecordSerializer
 
 class DepartmentViewSet(viewsets.ModelViewSet):
     queryset = Department.objects.all()
@@ -23,14 +23,9 @@ class CourseViewSet(viewsets.ModelViewSet):
             return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
 
-class CategoryViewSet(viewsets.ModelViewSet):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
 
-    def get_permissions(self):
-        if self.request.method == 'GET':
-            return [permissions.AllowAny()]
-        return [permissions.IsAdminUser()]
+
+
 
 class SubjectViewSet(viewsets.ModelViewSet):
     queryset = Subject.objects.all()

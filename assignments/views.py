@@ -11,9 +11,9 @@ class AssignmentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'Teacher':
+        if user.role == 'faculty':
             return Assignment.objects.filter(created_by=user).order_by('-created_at')
-        elif user.role == 'Student':
+        elif user.role == 'student':
             # Students see assignments assigned to their batches
             return Assignment.objects.filter(batch__students=user).order_by('-due_date')
         return Assignment.objects.all().order_by('-created_at')
@@ -28,9 +28,9 @@ class AssignmentSubmissionViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'Student':
+        if user.role == 'student':
             return AssignmentSubmission.objects.filter(student=user)
-        elif user.role == 'Teacher':
+        elif user.role == 'faculty':
             # Teachers see submissions for assignments they created
             return AssignmentSubmission.objects.filter(assignment__created_by=user)
         return AssignmentSubmission.objects.all()
@@ -41,7 +41,7 @@ class AssignmentSubmissionViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['patch'])
     def grade(self, request, pk=None):
         submission = self.get_object()
-        if request.user.role != 'Teacher' and not request.user.is_superuser:
+        if request.user.role != 'faculty' and not request.user.is_superuser:
             return Response({"detail": "Not authorized."}, status=status.HTTP_403_FORBIDDEN)
             
         status_val = request.data.get('status')
