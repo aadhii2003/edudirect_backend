@@ -19,20 +19,10 @@ def populate_department_slugs(apps, schema_editor):
 def drop_stale_slug_relations(apps, schema_editor):
     with schema_editor.connection.cursor() as cursor:
         # Drop the column if it exists, which cascades to most indexes
-        try:
-            cursor.execute('ALTER TABLE "courses_department" DROP COLUMN IF EXISTS "slug" CASCADE;')
-        except Exception:
-            pass
-        
+        cursor.execute('ALTER TABLE courses_department DROP COLUMN IF EXISTS slug CASCADE;')
         # Forcefully drop the indexes if they somehow survived
-        try:
-            cursor.execute('DROP INDEX IF EXISTS "courses_department_slug_197afd4f_like";')
-        except Exception:
-            pass
-        try:
-            cursor.execute('DROP INDEX IF EXISTS "courses_department_slug_key";')
-        except Exception:
-            pass
+        cursor.execute('DROP INDEX IF EXISTS courses_department_slug_197afd4f_like;')
+        cursor.execute('DROP INDEX IF EXISTS courses_department_slug_key;')
 
 class Migration(migrations.Migration):
 
