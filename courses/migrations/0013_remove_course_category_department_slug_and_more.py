@@ -16,13 +16,6 @@ def populate_department_slugs(apps, schema_editor):
         dept.slug = slug
         dept.save(update_fields=['slug'])
 
-def drop_stale_slug_relations(apps, schema_editor):
-    with schema_editor.connection.cursor() as cursor:
-        # Drop the column if it exists, which cascades to most indexes
-        cursor.execute('ALTER TABLE courses_department DROP COLUMN IF EXISTS slug CASCADE;')
-        # Forcefully drop the indexes if they somehow survived
-        cursor.execute('DROP INDEX IF EXISTS courses_department_slug_197afd4f_like;')
-        cursor.execute('DROP INDEX IF EXISTS courses_department_slug_key;')
 
 class Migration(migrations.Migration):
 
@@ -35,12 +28,11 @@ class Migration(migrations.Migration):
             model_name='course',
             name='category',
         ),
-        migrations.RunPython(drop_stale_slug_relations, migrations.RunPython.noop),
-        # Step 1: Add field WITHOUT unique
+        # Step 1: Add field WITHOUT unique and use db_column to bypass corrupted postgres relation
         migrations.AddField(
             model_name='department',
             name='slug',
-            field=models.SlugField(blank=True, max_length=255),
+            field=models.SlugField(blank=True, max_length=255, db_column='dept_slug'),
         ),
         # Step 2: Fill unique slugs for existing rows
         migrations.RunPython(populate_department_slugs, migrations.RunPython.noop),
@@ -48,7 +40,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='department',
             name='slug',
-            field=models.SlugField(blank=True, max_length=255, unique=True),
+            field=models.SlugField(blank=True, max_length=255, unique=True, db_column='dept_slug'),
         ),
         migrations.DeleteModel(
             name='Category',
