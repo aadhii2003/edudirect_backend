@@ -28,6 +28,10 @@ class Migration(migrations.Migration):
             model_name='course',
             name='category',
         ),
+        migrations.RunSQL(
+            sql='ALTER TABLE courses_department DROP COLUMN IF EXISTS slug;',
+            reverse_sql=migrations.RunSQL.noop
+        ),
         # Step 1: Add field WITHOUT unique
         migrations.AddField(
             model_name='department',
