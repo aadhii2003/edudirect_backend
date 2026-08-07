@@ -59,9 +59,13 @@ class HomePageSetting(models.Model):
 
 class AboutUsSetting(models.Model):
     """Singleton model for About Us page content."""
-    mission_statement = models.TextField(default="Our mission is to provide accessible, high-quality education to empower learners globally.")
-    vision_statement = models.TextField(default="To be the leading platform for professional and academic growth.")
-    history_content = models.TextField(default="Founded in 2026, EduConnect has grown to serve thousands of students.")
+    who_we_are = models.TextField(default="EduDirect is an education initiative built to guide learners through every step of their Malta journey.")
+    mission_statement = models.TextField(default="To equip international learners with the language, skills, cultural awareness, and pre-departure confidence they need to settle, study, and succeed in Malta.")
+    our_approach = models.JSONField(default=list, help_text="List of approach bullet points")
+    who_we_serve = models.TextField(default="Students, workers, families, and professionals preparing for life in Malta or strengthening their place in Maltese society.")
+    blended_learning_model = models.JSONField(default=list, help_text="List of blended learning model points")
+    blended_learning_benefits = models.JSONField(default=list, help_text="List of blended learning benefits")
+    courses_overview = models.TextField(default="EduDirect programmes are designed to work together or stand alone. Start with pre-departure readiness, build workplace skills with SkillPass, grow your Maltese through i Belong Stage One and Two, and deepen cultural understanding with Culture Stage 2.")
     
     def save(self, *args, **kwargs):
         self.pk = 1
