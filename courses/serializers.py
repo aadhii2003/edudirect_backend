@@ -45,6 +45,7 @@ class CourseSerializer(serializers.ModelSerializer):
         model = Course
         fields = [
             'id', 'slug', 'name', 'shortDescription', 'longDescription', 
+            'headline', 'overview', 'what_you_will_learn', 'format_description', 'outcomes', 'cta_text',
             'department', 'departmentId', 'mode', 'duration', 'fee', 'startDates', 
             'certification', 'eligibility', 'syllabus', 'examPattern', 'examSchedule',
             'image_url', 'subjects', 'batches', 'instructor', 'instructor_name'
