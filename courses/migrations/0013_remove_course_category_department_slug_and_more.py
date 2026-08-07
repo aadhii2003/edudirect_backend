@@ -28,20 +28,17 @@ class Migration(migrations.Migration):
             model_name='course',
             name='category',
         ),
-        # Since the column 'slug' and its index already exist in the database due to the partial crash, 
-        # we separate database and state. We tell Django's state that the field is added and unique, 
-        # but we execute NO SQL against the database, perfectly syncing them.
-        migrations.SeparateDatabaseAndState(
-            state_operations=[
-                migrations.AddField(
-                    model_name='department',
-                    name='slug',
-                    field=models.SlugField(blank=True, max_length=255, unique=True),
-                ),
-            ],
-            database_operations=[],
+        migrations.AddField(
+            model_name="department",
+            name="slug",
+            field=models.SlugField(max_length=255, blank=True),
         ),
         migrations.RunPython(populate_department_slugs, migrations.RunPython.noop),
+        migrations.AlterField(
+            model_name='department',
+            name='slug',
+            field=models.SlugField(blank=True, max_length=255, unique=True),
+        ),
         migrations.DeleteModel(
             name='Category',
         ),
